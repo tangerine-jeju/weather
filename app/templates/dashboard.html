@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="card">
+  <header class="header-row">
+    <h1>Welcome, {{ username }}</h1>
+    <a class="link-button" href="{{ request.url_for('logout') }}">Logout</a>
+  </header>
+
+  <h2>Today's Weather</h2>
+  {% if error %}
+  <p class="error">{{ error }}</p>
+  {% elif weather %}
+  <p><strong>Summary:</strong> {{ weather.summary }}</p>
+  <details>
+    <summary>Raw API response</summary>
+    <pre>{{ weather.raw }}</pre>
+  </details>
+  {% else %}
+  <p>No weather data.</p>
+  {% endif %}
+</section>
+{% endblock %}
