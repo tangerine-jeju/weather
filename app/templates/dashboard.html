@@ -13,7 +13,7 @@
   <p><strong>Summary:</strong> {{ weather.summary }}</p>
   <details>
     <summary>Raw API response</summary>
-    <pre>{{ weather.raw }}</pre>
+    <pre>{{ weather.raw_pretty or weather.raw }}</pre>
   </details>
   {% else %}
   <p>No weather data.</p>

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime
 
 import requests
@@ -9,11 +10,15 @@ from .config import Config
 
 def fetch_today_weather(config: Config) -> dict:
     url = f"{config.kma_base_url.rstrip('/')}{config.kma_today_path}"
+    today = datetime.now().strftime("%Y%m%d")
     params = {
         "authKey": config.kma_api_key,
-        "stn": config.kma_station_id,
-        "tm": datetime.now().strftime("%Y%m%d"),
-        "help": 0,
+        "tm1": today,
+        "tm2": today,
+        "lat": config.kma_lat,
+        "lon": config.kma_lon,
+        "help": config.kma_help,
+        "disp": config.kma_disp,
     }
 
     response = requests.get(url, params=params, timeout=10)
@@ -22,10 +27,24 @@ def fetch_today_weather(config: Config) -> dict:
     content_type = response.headers.get("Content-Type", "")
     if "application/json" in content_type:
         data = response.json()
-        return {"source": url, "raw": data, "summary": _json_summary(data)}
+        return {
+            "source": response.url,
+            "raw": data,
+            "raw_pretty": json.dumps(data, ensure_ascii=False, indent=2),
+            "summary": _json_summary(data),
+        }
 
     text = response.text.strip()
-    return {"source": url, "raw": text, "summary": _text_summary(text)}
+    structured = {
+        "content_type": content_type or "text/plain",
+        "rows": [line for line in text.splitlines() if line.strip()],
+    }
+    return {
+        "source": response.url,
+        "raw": structured,
+        "raw_pretty": json.dumps(structured, ensure_ascii=False, indent=2),
+        "summary": _text_summary(text),
+    }
 
 
 def _json_summary(data: dict) -> str:
